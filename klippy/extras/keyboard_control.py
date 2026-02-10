@@ -154,44 +154,15 @@ class MockConfig:
     def get_printer(self):
         return MockPrinter()
 
-
 class MockPrinter:
     def lookup_object(self, name: str):
         return MockGcode()
-
 
 class MockGcode:
     def register_command(self, command: str, callback, desc: str = ''):
         pass
     
+if __name__ == "__main__":
+    e = load_config_prefix(MockConfig()) 
+    e.run()
     
-e = load_config_prefix(MockConfig()) 
-e.run()
-
-
-
-# class Position(NamedTuple):
-#     x: float
-#     y: float
-#     z: float
-
-# class PositionModel:
-#     def __init__(self, x_min: float, x_max: float, y_min: float, y_max: float, z_min: float, z_max: float, speed: float, accel: float, x_i: float, y_i: float, z_i: float) -> None:
-#         self.x_min = x_min
-#         self.x_max = x_max
-#         self.y_min = y_min
-#         self.y_max = y_max
-#         self.z_min = z_min
-#         self.z_max = z_max
-#         self.speed = speed
-#         self.accel = accel
-        
-#         self.x = x_i
-#         self.y = y_i
-#         self.z = z_i
-        
-#     def move(self, keys):
-#         pass
-    
-#     def get_pos(self) -> :
-#         pass
