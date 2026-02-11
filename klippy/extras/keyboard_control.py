@@ -118,7 +118,7 @@ class KeyboardControl:
                 keys_pressed += 'd'
                 
             if self._move(keys_pressed):
-                print(self._move_gcode())
+                self.gcode.run_script_from_command(self._move_gcode())
         
         pygame.quit()
         
