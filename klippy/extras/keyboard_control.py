@@ -2,10 +2,13 @@ import pygame
 import sys
 from typing import NamedTuple
 import vector
+import math
 
 """
 [keyboard_control]
 framerate: 60
+layer_height: 0.2
+line_width: 0.6
 x_min: 10
 x_max: 200
 y_min: 10
@@ -41,11 +44,18 @@ G1 Z.24
 ; TODO: finish
 """
 
+class G1(NamedTuple):
+    x: float
+    y: float
+    e: float
+
 class KeyboardControl:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.gcode = self.printer.lookup_object('gcode')
         self.framerate = config.getint('framerate')
+        self.layer_height = config.getfloat('layer_height')
+        self.line_width = config.getfloat('line_width')
         self.x_min = config.getfloat('x_min')
         self.x_max = config.getfloat('x_max')
         self.y_min = config.getfloat('y_min')
@@ -67,10 +77,13 @@ class KeyboardControl:
             return max
         return val + move
     
-    def _move_gcode(self) -> str:
-        return f"G1 X{self.x:.3f} Y{self.y:.3f} E1.13607"
+    def _move_gcode(self, move: G1) -> str:
+        return f"G1 X{move.x:.3f} Y{move.y:.3f} E{move.e:.5f}"
     
-    def _move(self, keys: str) -> bool:
+    def _distance(self, x1: float, y1: float, x2: float, y2: float) -> float:
+        return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+    
+    def _move(self, keys: str) -> G1:
         v = vector.obj(x=0, y=0)
         for char in keys:
             match char:
@@ -82,13 +95,14 @@ class KeyboardControl:
                     v.y -= 1
                 case 'd':
                     v.x += 1
-        if v.rho == 0:
-            return False
         v = v.unit()
         v *= (self.speed / self.framerate)
         self.x = self._increment_bounded(self.x, v.x, self.x_min, self.x_max)
-        self.y = self._increment_bounded(self.y, v.y, self.y_min, self.y_max)        
-        return True
+        self.y = self._increment_bounded(self.y, v.y, self.y_min, self.y_max)
+        # v.rho = move distance
+        # slic3r extrusion formula (___) shaped
+        e_length = v.rho * (math.pi * (self.layer_height / 2) ** 6 + (self.line_width - self.layer_height) * self.layer_height)
+        return G1(self.x, self.y, e_length)
         
     def run(self):
         pygame.init()
@@ -117,8 +131,10 @@ class KeyboardControl:
             if keys[pygame.K_d]:
                 keys_pressed += 'd'
                 
-            if self._move(keys_pressed):
-                self.gcode.run_script_from_command(self._move_gcode())
+            move = self._move(keys_pressed)
+            if move.e > 0:
+                print(self._move_gcode(move))
+                # self.gcode.run_script_from_command(self._move_gcode(move))
         
         pygame.quit()
         
@@ -135,6 +151,8 @@ class MockConfig:
     def __init__(self) -> None:
         self.values = {
             'framerate': 60,
+            'layer_height': 0.2,
+            'line_width': 0.6,
             'x_min': 10,
             'x_max': 200,
             'y_min': 10,
