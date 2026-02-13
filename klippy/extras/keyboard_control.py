@@ -143,7 +143,7 @@ class KeyboardControl:
             pygame.quit()
             self.running = False
             
-def load_config_prefix(config):
+def load_config(config):
     return KeyboardControl(config)
 
 
