@@ -66,7 +66,7 @@ class KeyboardControl:
         self.accel = config.getfloat('acceleration')
         self.x = (self.x_max - self.x_min) / 2
         self.y = (self.y_max - self.y_min) / 2
-        self.z = 0.24 # TODO: don't hard code this
+        self.z = self.layer_height
         self.gcode.register_command('ETCH_START', self.run, desc='start etching')
         self.gcode.register_command('ETCH_STOP', self.stop, desc='stop etching, can also stop by closing the window')
         
@@ -144,7 +144,7 @@ class KeyboardControl:
             self.running = False
             
 def load_config(config):
-    return KeyboardControl(config)
+    return KeyboardControl(MockConfig)
 
 
 class MockConfig:
@@ -181,6 +181,6 @@ class MockGcode:
         pass
     
 if __name__ == "__main__":
-    e = load_config_prefix(MockConfig()) 
+    e = load_config(MockConfig()) 
     e.run()
     
