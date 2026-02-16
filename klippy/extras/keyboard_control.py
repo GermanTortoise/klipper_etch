@@ -144,7 +144,7 @@ class KeyboardControl:
             self.running = False
             
 def load_config(config):
-    return KeyboardControl(MockConfig)
+    return KeyboardControl(config)
 
 
 class MockConfig:
