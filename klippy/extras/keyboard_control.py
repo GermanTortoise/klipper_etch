@@ -1,7 +1,6 @@
-# import pygame
-import sys
+import pygame
 from typing import NamedTuple
-# import vector
+import vector
 import math
 
 """
@@ -62,8 +61,8 @@ class KeyboardControl:
         self.y_max = config.getfloat('y_max')
         self.z_min = config.getfloat('z_min')
         self.z_max = config.getfloat('z_max')
-        self.speed = config.getfloat('speed')
-        self.accel = config.getfloat('acceleration')
+        self.speed = config.getint('speed')
+        self.accel = config.getint('acceleration')
         self.x = (self.x_max - self.x_min) / 2
         self.y = (self.y_max - self.y_min) / 2
         self.z = self.layer_height
