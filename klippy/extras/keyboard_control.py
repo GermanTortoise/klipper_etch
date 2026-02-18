@@ -103,13 +103,15 @@ class KeyboardControl:
         e_length = v.rho * (math.pi * (self.layer_height / 2) ** 6 + (self.line_width - self.layer_height) * self.layer_height)
         return G1(self.x, self.y, e_length)
         
-    def run(self):
+    def run(self, gcmd):
+        gcmd.respond_info("Started etching")
         pygame.init()
         self.clock = pygame.time.Clock()
         self.running = True
         # Create a small hidden window (required for pygame to work)
         self.screen = pygame.display.set_mode((100, 100))
         pygame.display.set_caption("Keyboard Control")
+        gcmd.respond_info("Finished etch init")
         while self.running:
             self.clock.tick(self.framerate)
             
@@ -137,7 +139,8 @@ class KeyboardControl:
         
         pygame.quit()
         
-    def stop(self):
+    def stop(self, gcmd):
+        gcmd.respond_info("Stop etching")
         if self.running:
             pygame.quit()
             self.running = False
