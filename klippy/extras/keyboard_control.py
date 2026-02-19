@@ -66,7 +66,7 @@ class KeyboardControl:
         self.x = (self.x_max - self.x_min) / 2
         self.y = (self.y_max - self.y_min) / 2
         self.z = self.layer_height
-        self.gcode.register_command('ETCH_START', self.run, desc='start etching')
+        self.gcode.register_command('ETCH_START', self.run, desc='start etching, MOCK=1 for mock input')
         self.gcode.register_command('ETCH_STOP', self.stop, desc='stop etching, can also stop by closing the window')
         
     def _increment_bounded(self, val: float, move: float, min: float, max: float) -> float:
@@ -105,14 +105,22 @@ class KeyboardControl:
         
     def run(self, gcmd):
         gcmd.respond_info("Started etching")
+        mock = gcmd.get_int('MOCK', 0)
+        mock_input = True if mock > 0 else False
+        
         pygame.init()
         self.clock = pygame.time.Clock()
         self.running = True
-        # Create a small hidden window (required for pygame to work)
         self.screen = pygame.display.set_mode((100, 100))
         pygame.display.set_caption("Keyboard Control")
         gcmd.respond_info("Finished etch init")
-        while self.running:
+        
+        frame_count = 0
+        # TODO: refactor this less stupidly
+        test_keys = ['w', 'w', 'w', 'w', 'w', 'a', 'a', 'a', 'a', 'a', 's', 's', 's', 's', 's', 'd', 'd', 'd', 'd', 'd']
+        max_frames = len(test_keys) if mock_input else math.inf
+        
+        while self.running and frame_count < max_frames:
             self.clock.tick(self.framerate)
             
             # Handle pygame events
@@ -120,26 +128,31 @@ class KeyboardControl:
                 if event.type == pygame.QUIT:
                     self.running = False
             
-            # Get pressed keys
-            keys = pygame.key.get_pressed()
-            keys_pressed = ""
-            if keys[pygame.K_w]:
-                keys_pressed += 'w'
-            if keys[pygame.K_a]:
-                keys_pressed += 'a'
-            if keys[pygame.K_s]:
-                keys_pressed += 's'
-            if keys[pygame.K_d]:
-                keys_pressed += 'd'
-                
+            # Use test keys if provided, otherwise read from keyboard
+            if test_keys:
+                keys_pressed = test_keys[frame_count] if frame_count < len(test_keys) else ""
+            else:
+                keys = pygame.key.get_pressed()
+                keys_pressed = ""
+                if keys[pygame.K_w]:
+                    keys_pressed += 'w'
+                if keys[pygame.K_a]:
+                    keys_pressed += 'a'
+                if keys[pygame.K_s]:
+                    keys_pressed += 's'
+                if keys[pygame.K_d]:
+                    keys_pressed += 'd'
+            
             move = self._move(keys_pressed)
             if move.e > 0:
                 print(self._move_gcode(move))
-                # self.gcode.run_script_from_command(self._move_gcode(move))
+            
+            frame_count += 1
         
         pygame.quit()
         
     def stop(self, gcmd):
+        # don't think this can work cuz [start] is running and can't be interuppted
         gcmd.respond_info("Stop etching")
         if self.running:
             pygame.quit()
