@@ -33,10 +33,10 @@ M73 P0 R6
 G90 ; use absolute coordinates
 M83 ; extruder relative mode
 M204 S5000 T5000
-M104 S230 ; set extruder temp
-M140 S50 ; set bed temp
+;M104 S230 ; set extruder temp
+;M140 S50 ; set bed temp
 G28 ; home all
-M190 S50 ; wait for bed temp
+;M190 S50 ; wait for bed temp
 G1 Z1.24
 G1 X100 Y100 ; TODO: don't hardcode this
 G1 Z.24
@@ -104,7 +104,7 @@ class KeyboardControl:
         return G1(self.x, self.y, e_length)
         
     def run(self, gcmd):
-        gcmd.respond_info("Started etching")
+        gcmd.respond_info("Started etching!")
         mock = gcmd.get_int('MOCK', 0)
         if mock > 0:
             mock_input = True
@@ -118,6 +118,8 @@ class KeyboardControl:
         self.screen = pygame.display.set_mode((100, 100))
         pygame.display.set_caption("Keyboard Control")
         gcmd.respond_info("Finished etch init")
+        
+        self.gcode.run_script_from_command(startup_command)
         
         frame_count = 0
         # TODO: refactor this less stupidly
@@ -149,7 +151,9 @@ class KeyboardControl:
             
             move = self._move(keys_pressed)
             if move.e > 0:
-                print(self._move_gcode(move))
+                gcode_move = self._move_gcode(move)
+                # print(gcode_move)
+                self.gcode.run_script_from_command(gcode_move)
             
             frame_count += 1
         
