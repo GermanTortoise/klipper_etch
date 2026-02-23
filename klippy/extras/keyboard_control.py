@@ -106,7 +106,11 @@ class KeyboardControl:
     def run(self, gcmd):
         gcmd.respond_info("Started etching")
         mock = gcmd.get_int('MOCK', 0)
-        mock_input = True if mock > 0 else False
+        if mock > 0:
+            mock_input = True
+            gcmd.respond_info("Started etching with mock input")
+        else:
+            mock_input = False
         
         pygame.init()
         self.clock = pygame.time.Clock()
@@ -150,6 +154,8 @@ class KeyboardControl:
             frame_count += 1
         
         pygame.quit()
+        
+        gcmd.respond_info("Finished etching")
         
     def stop(self, gcmd):
         # don't think this can work cuz [start] is running and can't be interuppted
